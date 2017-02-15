@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/W01D05_Reflection.iml" filepath="$PROJECT_DIR$/.idea/modules/W01D05_Reflection.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/W01D05_Reflection_main.iml" filepath="$PROJECT_DIR$/.idea/modules/W01D05_Reflection_main.iml" group="W01D05_Reflection" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/W01D05_Reflection_test.iml" filepath="$PROJECT_DIR$/.idea/modules/W01D05_Reflection_test.iml" group="W01D05_Reflection" />
+    </modules>
+  </component>
+</project>
