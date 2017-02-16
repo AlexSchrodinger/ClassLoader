@@ -8,20 +8,20 @@ import java.net.MalformedURLException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
-import java.util.Enumeration;
 import java.util.HashMap;
-import java.util.Hashtable;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.net.URL;
 
 public class JarClassLoader extends ClassLoader {
 
-    private String jarFile = "Animal.jar"; //Path to the jar file
-    private Hashtable classes = new Hashtable(); //used to cache already defined classes
+//    private String jarFile = "Animal.jar";
+    private HashMap<String, Class> classes = new HashMap<>();
+    private URL url;
+
 
     public JarClassLoader() {
-        super(JarClassLoader.class.getClassLoader()); //calls the parent class loader's constructor
+        super(JarClassLoader.class.getClassLoader());
     }
 
     public Class loadClass(String className) throws ClassNotFoundException {
@@ -29,19 +29,19 @@ public class JarClassLoader extends ClassLoader {
     }
 
     public Class loadClassFromURL(String className, String URL) throws ClassNotFoundException {
-        java.net.URL url = null;
+
 
         try {
             url = new URL(URL);
         } catch (MalformedURLException e) {
             e.printStackTrace();
         }
-        try (InputStream is = url.openStream()) {
-            Files.copy(is, Paths.get(jarFile), StandardCopyOption.REPLACE_EXISTING);
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+//        try (InputStream is = url.openStream()) {
+//            Files.copy(is, Paths.get(jarFile), StandardCopyOption.REPLACE_EXISTING);
+//
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
         return findClass(className);
     }
 
@@ -49,31 +49,23 @@ public class JarClassLoader extends ClassLoader {
         byte classByte[];
         Class result = null;
 
-        result = (Class) classes.get(className); //checks in cached classes
+        result = classes.get(className);
         if (result != null) {
             return result;
         }
 
         try {
             return findSystemClass(className);
-        } catch (Exception e) {
+        } catch (ClassNotFoundException e) {
         }
 
         try {
-            JarFile jar = new JarFile(jarFile);
-            Enumeration<JarEntry> entries = jar.entries();
-            JarEntry anEntry;
-            JarEntry entry = jar.getJarEntry(className + ".class");
-            if (entry == null) while (entries.hasMoreElements()) {
-                anEntry = entries.nextElement();
-                if (!anEntry.isDirectory()) {
-                    String[] dirsAndName = anEntry.getName().split("/");
-                    String name = dirsAndName[dirsAndName.length-1];
-                    if (name.equals(className + ".class")) {
-                        entry = anEntry;
-                    }
-                }
+            try (InputStream is = url.openStream()) {
+                Files.copy(is, Paths.get("Animal.jar"), StandardCopyOption.REPLACE_EXISTING);
             }
+
+            JarFile jar = new JarFile("Animal.jar");
+            JarEntry entry = jar.getJarEntry(className + ".class");
             InputStream is = jar.getInputStream(entry);
             ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
             int nextValue = is.read();
@@ -82,18 +74,12 @@ public class JarClassLoader extends ClassLoader {
                 nextValue = is.read();
             }
 
-            String classAndPack = entry.getName();
-            classAndPack = classAndPack.replace('.', ' ');
-            classAndPack = classAndPack.replace('/', '.');
-            String classPath = classAndPack.split(" ")[0];
-
             classByte = byteStream.toByteArray();
-
-            result = defineClass(classPath, classByte, 0, classByte.length);
+            result = defineClass(className, classByte, 0, classByte.length, null);
             classes.put(className, result);
             return result;
         } catch (Exception e) {
-            return null;
+            throw new RuntimeException(e);
         }
     }
 
